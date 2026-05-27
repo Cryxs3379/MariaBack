@@ -19,6 +19,7 @@ const getMe = async (req, res) => {
       user: userResult.rows[0],
     });
   } catch (error) {
+    console.error("Error en getMe:", error);
     return res.status(500).json({
       message: "Error al obtener el usuario",
     });

@@ -1,6 +1,7 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const pool = require("../config/db");
+const { isValidEmail, normalizeEmail } = require("../utils/validators");
 
 const register = async (req, res) => {
   try {
@@ -12,9 +13,30 @@ const register = async (req, res) => {
       });
     }
 
+    const normalizedName = name.trim();
+    const normalizedEmail = normalizeEmail(email);
+
+    if (!normalizedName) {
+      return res.status(400).json({
+        message: "El nombre no puede estar vacio",
+      });
+    }
+
+    if (!isValidEmail(normalizedEmail)) {
+      return res.status(400).json({
+        message: "El formato del email no es valido",
+      });
+    }
+
+    if (password.length < 8) {
+      return res.status(400).json({
+        message: "La contrasena debe tener al menos 8 caracteres",
+      });
+    }
+
     const existingUser = await pool.query(
       "SELECT id FROM users WHERE email = $1",
-      [email]
+      [normalizedEmail]
     );
 
     if (existingUser.rows.length > 0) {
@@ -29,7 +51,7 @@ const register = async (req, res) => {
       `INSERT INTO users (name, email, password_hash, role, is_verified, status)
        VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING id, name, email, role, is_verified, status, created_at, updated_at`,
-      [name, email, passwordHash, "user", false, "active"]
+      [normalizedName, normalizedEmail, passwordHash, "user", false, "active"]
     );
 
     return res.status(201).json({
@@ -37,6 +59,7 @@ const register = async (req, res) => {
       user: newUser.rows[0],
     });
   } catch (error) {
+    console.error("Error en register:", error);
     return res.status(500).json({
       message: "Error al registrar el usuario",
     });
@@ -53,11 +76,19 @@ const login = async (req, res) => {
       });
     }
 
+    const normalizedEmail = normalizeEmail(email);
+
+    if (!isValidEmail(normalizedEmail)) {
+      return res.status(400).json({
+        message: "El formato del email no es valido",
+      });
+    }
+
     const userResult = await pool.query(
       `SELECT id, name, email, password_hash, role, is_verified, status, created_at, updated_at
        FROM users
        WHERE email = $1`,
-      [email]
+      [normalizedEmail]
     );
 
     if (userResult.rows.length === 0) {
@@ -89,7 +120,10 @@ const login = async (req, res) => {
         role: user.role,
         is_verified: user.is_verified,
       },
-      process.env.JWT_SECRET
+      process.env.JWT_SECRET,
+      {
+        expiresIn: process.env.JWT_EXPIRES_IN || "7d",
+      }
     );
 
     const { password_hash, ...userWithoutPassword } = user;
@@ -100,6 +134,7 @@ const login = async (req, res) => {
       user: userWithoutPassword,
     });
   } catch (error) {
+    console.error("Error en login:", error);
     return res.status(500).json({
       message: "Error al iniciar sesion",
     });

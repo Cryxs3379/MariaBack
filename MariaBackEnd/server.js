@@ -18,9 +18,17 @@ app.get("/", (req, res) => {
   });
 });
 
+app.get("/health", (req, res) => {
+  res.json({
+    status: "ok",
+    service: "MariaBackEnd",
+    database: "autoimmune_app",
+  });
+});
+
 app.use("/api/auth", authRoutes);
 app.use("/api/users", usersRoutes);
 
 app.listen(PORT, () => {
-  console.log(`Servidor escuchando en el puerto ${PORT}`);
+  console.log(`MariaBackEnd escuchando en http://localhost:${PORT}`);
 });
