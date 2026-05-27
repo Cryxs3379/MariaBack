@@ -113,6 +113,12 @@ const login = async (req, res) => {
       });
     }
 
+    if (!process.env.JWT_SECRET) {
+      return res.status(500).json({
+        message: "JWT_SECRET no esta configurado",
+      });
+    }
+
     const token = jwt.sign(
       {
         id: user.id,

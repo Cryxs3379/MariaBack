@@ -3,7 +3,7 @@ const isValidEmail = (email) => {
     return false;
   }
 
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  return /^[^\s@]+@[^\s@]+$/.test(email);
 };
 
 const normalizeEmail = (email) => {
