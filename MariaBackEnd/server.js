@@ -9,6 +9,7 @@ const symptomsRoutes = require("./routes/symptoms.routes");
 const eventsRoutes = require("./routes/events.routes");
 const forumRoutes = require("./routes/forum.routes");
 const diseasesRoutes = require("./routes/diseases.routes");
+const checkinsRoutes = require("./routes/checkins.routes");
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -36,6 +37,7 @@ app.use("/api/symptoms", symptomsRoutes);
 app.use("/api/events", eventsRoutes);
 app.use("/api/forum", forumRoutes);
 app.use("/api/diseases", diseasesRoutes);
+app.use("/api/checkins", checkinsRoutes);
 
 app.listen(PORT, () => {
   console.log(`MariaBackEnd escuchando en http://localhost:${PORT}`);
